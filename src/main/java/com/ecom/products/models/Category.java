@@ -1,4 +1,4 @@
-package com.ecom.models;
+package com.ecom.products.models;
 
 import lombok.Getter;
 import lombok.Setter;

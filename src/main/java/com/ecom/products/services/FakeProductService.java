@@ -1,9 +1,9 @@
-package com.ecom.services;
+package com.ecom.products.services;
 
-import com.ecom.exceptions.ProductNotFoundException;
-import com.ecom.models.Category;
-import com.ecom.models.Product;
-import com.ecom.dtos.FakeStoreProductDto;
+import com.ecom.products.exceptions.ProductNotFoundException;
+import com.ecom.products.models.Category;
+import com.ecom.products.models.Product;
+import com.ecom.products.dtos.FakeStoreProductDto;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

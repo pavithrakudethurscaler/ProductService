@@ -1,7 +1,7 @@
-package com.ecom.services;
+package com.ecom.products.services;
 
-import com.ecom.exceptions.ProductNotFoundException;
-import com.ecom.models.Product;
+import com.ecom.products.exceptions.ProductNotFoundException;
+import com.ecom.products.models.Product;
 
 import java.util.List;
 

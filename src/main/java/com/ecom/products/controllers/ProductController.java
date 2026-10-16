@@ -1,9 +1,9 @@
-package com.ecom.controllers;
+package com.ecom.products.controllers;
 
-import com.ecom.dtos.ProductNotFoundDto;
-import com.ecom.exceptions.ProductNotFoundException;
-import com.ecom.models.Product;
-import com.ecom.services.ProductService;
+import com.ecom.products.dtos.ProductNotFoundDto;
+import com.ecom.products.exceptions.ProductNotFoundException;
+import com.ecom.products.models.Product;
+import com.ecom.products.services.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

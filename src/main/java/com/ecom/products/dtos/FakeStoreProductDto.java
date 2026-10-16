@@ -1,4 +1,4 @@
-package com.ecom.dtos;
+package com.ecom.products.dtos;
 
 import lombok.Getter;
 import lombok.Setter;

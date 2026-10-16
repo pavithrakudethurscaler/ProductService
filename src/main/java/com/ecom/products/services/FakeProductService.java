@@ -97,6 +97,29 @@ public class FakeProductService implements ProductService {
         return true;
     }
 
+    @Override
+    public List<Product> searchProducts(String keyword) {
+        return getAllProducts().stream()
+                .filter(p -> p.getName() != null && p.getName().toLowerCase().contains(keyword.toLowerCase()))
+                .toList();
+    }
+
+    @Override
+    public List<Product> getProductsByCategory(String categoryName) {
+        return getAllProducts().stream()
+                .filter(p -> p.getCategory() != null && categoryName.equalsIgnoreCase(p.getCategory().getName()))
+                .toList();
+    }
+
+    @Override
+    public List<Category> getAllCategories() {
+        return getAllProducts().stream()
+                .map(Product::getCategory)
+                .filter(c -> c != null && c.getName() != null)
+                .collect(java.util.stream.Collectors.toMap(Category::getName, c -> c, (a, b) -> a))
+                .values().stream().toList();
+    }
+
     private Product convertDtoToProduct(FakeStoreProductDto fakeStoreProductDto) {
         Product product = new Product();
         product.setId(fakeStoreProductDto.getId());

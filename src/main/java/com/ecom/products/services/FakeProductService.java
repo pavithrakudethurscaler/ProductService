@@ -98,10 +98,10 @@ public class FakeProductService implements ProductService {
     }
 
     @Override
-    public List<Product> searchProducts(String keyword) {
-        return getAllProducts().stream()
+    public ProductSearchResult searchProducts(String keyword) {
+        return new ProductSearchResult(getAllProducts().stream()
                 .filter(p -> p.getName() != null && p.getName().toLowerCase().contains(keyword.toLowerCase()))
-                .toList();
+                .toList(), "database");
     }
 
     @Override

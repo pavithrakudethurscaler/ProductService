@@ -4,6 +4,7 @@ import com.ecom.products.auth.AuthInterceptor;
 import com.ecom.products.auth.AuthUserDto;
 import com.ecom.products.exceptions.ProductNotFoundException;
 import com.ecom.products.models.Product;
+import com.ecom.products.services.ProductSearchResult;
 import com.ecom.products.services.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,9 +38,11 @@ public class ProductController {
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
 
+    // X-Search-Engine tells the client whether Elasticsearch or the database fallback answered
     @GetMapping("/search")
     public ResponseEntity<List<Product>> searchProducts(@RequestParam String keyword) {
-        return new ResponseEntity<>(productService.searchProducts(keyword), HttpStatus.OK);
+        ProductSearchResult result = productService.searchProducts(keyword);
+        return ResponseEntity.ok().header("X-Search-Engine", result.engine()).body(result.products());
     }
 
     @GetMapping("/category/{categoryName}")

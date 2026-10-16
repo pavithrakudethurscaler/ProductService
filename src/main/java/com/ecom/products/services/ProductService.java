@@ -12,7 +12,7 @@ public interface ProductService {
     Product addProduct(Product product);
     boolean updateProduct(Product product) throws ProductNotFoundException;
     boolean deleteProduct(Long id) throws ProductNotFoundException;
-    List<Product> searchProducts(String keyword);
+    ProductSearchResult searchProducts(String keyword);
     List<Product> getProductsByCategory(String categoryName);
     List<Category> getAllCategories();
     //Product replaceProduct(Long id, Product product);

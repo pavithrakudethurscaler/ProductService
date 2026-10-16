@@ -5,10 +5,15 @@ import com.ecom.products.models.Category;
 import com.ecom.products.models.Product;
 import com.ecom.products.repos.CategoryRepo;
 import com.ecom.products.repos.ProductRepo;
+import com.ecom.products.search.ProductSearchService;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Product service backed by this service's own database (HLD 3.2).
@@ -19,10 +24,12 @@ import java.util.List;
 public class SelfProductService implements ProductService {
     private final ProductRepo productRepo;
     private final CategoryRepo categoryRepo;
+    private final ProductSearchService searchService;
 
-    public SelfProductService(ProductRepo productRepo, CategoryRepo categoryRepo) {
+    public SelfProductService(ProductRepo productRepo, CategoryRepo categoryRepo, ProductSearchService searchService) {
         this.productRepo = productRepo;
         this.categoryRepo = categoryRepo;
+        this.searchService = searchService;
     }
 
     @Override
@@ -40,7 +47,9 @@ public class SelfProductService implements ProductService {
     public Product addProduct(Product product) {
         product.setId(null);
         product.setCategory(resolveCategory(product.getCategory()));
-        return productRepo.save(product);
+        Product saved = productRepo.save(product);
+        searchService.index(saved);
+        return saved;
     }
 
     @Override
@@ -58,7 +67,7 @@ public class SelfProductService implements ProductService {
         if (product.getCategory() != null) {
             existing.setCategory(resolveCategory(product.getCategory()));
         }
-        productRepo.save(existing);
+        searchService.index(productRepo.save(existing));
         return true;
     }
 
@@ -67,12 +76,36 @@ public class SelfProductService implements ProductService {
         Product existing = getProduct(id);
         existing.setDeleted(true);
         productRepo.save(existing);
+        searchService.remove(id);
         return true;
     }
 
+    /*
+     1. Ask Elasticsearch for ranked matching ids (typo-tolerant, prefix-aware)
+     2. Load those products from the database, keeping Elasticsearch's order and skipping deleted ones
+        (the database is the source of truth; the index may briefly lag)
+     3. If Elasticsearch is unavailable, fall back to the database name search
+     */
     @Override
-    public List<Product> searchProducts(String keyword) {
-        return productRepo.findByNameContainingIgnoreCaseAndDeletedFalse(keyword);
+    public ProductSearchResult searchProducts(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            throw new IllegalArgumentException("keyword is required");
+        }
+        Optional<List<Long>> ids = searchService.search(keyword.trim());
+        if (ids.isEmpty()) {
+            return new ProductSearchResult(productRepo.findByNameContainingIgnoreCaseAndDeletedFalse(keyword.trim()),
+                    "database");
+        }
+        Map<Long, Product> byId = productRepo.findAllById(ids.get()).stream()
+                .filter(p -> !p.isDeleted())
+                .collect(Collectors.toMap(Product::getId, p -> p));
+        List<Product> ranked = ids.get().stream().map(byId::get).filter(Objects::nonNull).toList();
+        return new ProductSearchResult(ranked, "elasticsearch");
+    }
+
+    /** Rebuilds the search index from the database (admin operation) */
+    public int reindexSearch() {
+        return searchService.reindexAll(productRepo.findByDeletedFalse());
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.ecom.products.exceptionhandlers;
 
 import com.ecom.common.dtos.ErrorDto;
 import com.ecom.products.auth.AuthServiceUnavailableException;
+import com.ecom.products.auth.ForbiddenException;
 import com.ecom.products.auth.UnauthorizedException;
 import com.ecom.products.dtos.ProductNotFoundDto;
 import com.ecom.products.exceptions.ProductNotFoundException;
@@ -23,6 +24,11 @@ public class ProductExceptionHandler {
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ErrorDto> handleUnauthorized(UnauthorizedException e) {
         return new ResponseEntity<>(new ErrorDto(e.getMessage()), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorDto> handleForbidden(ForbiddenException e) {
+        return new ResponseEntity<>(new ErrorDto(e.getMessage()), HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(AuthServiceUnavailableException.class)

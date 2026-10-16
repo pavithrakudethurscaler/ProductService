@@ -7,13 +7,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
- * Requires a valid "Authorization: Bearer <token>" header for product write operations.
+ * Requires a valid "Authorization: Bearer <token>" header from a user with the ADMIN role for product write operations.
  * Reads (GET) stay public so anyone can browse the catalog.
  */
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
     public static final String AUTH_USER_ATTRIBUTE = "authUser";
     private static final String BEARER_PREFIX = "Bearer ";
+    private static final String ADMIN_ROLE = "ADMIN";
 
     private final AuthService authService;
 
@@ -34,6 +35,10 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         AuthUserDto user = authService.validateToken(header.substring(BEARER_PREFIX.length()).trim());
+        // Catalog changes are for administrators only
+        if (user.getRoles() == null || !user.getRoles().contains(ADMIN_ROLE)) {
+            throw new ForbiddenException("Administrator role required to change products");
+        }
         request.setAttribute(AUTH_USER_ATTRIBUTE, user);
         return true;
     }
